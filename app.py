@@ -3,12 +3,29 @@ from flask_cors import CORS
 from groq import Groq
 from save_chroma import save_to_chroma, rag
 from prompt_design import ubah_prompt, buat_pertanyaan
+from connect_mongo_db import show_data, login
 from openpyxl import Workbook, load_workbook
 import os
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
-# Inisialisasi collection di luar fungsi app factory
 # Ini memastikan fungsi save_to_chroma() hanya dipanggil sekali
 collection = save_to_chroma()
+uri = "mongodb+srv://validasi:sociachat123@validasi.57paaa9.mongodb.net/?appName=Validasi"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("--- Pinged your deployment. You successfully connected to MongoDB!  ---")
+except Exception as e:
+    print(e)
+
+db = client['validation_database']
+collections = db['validation_collection']
+
 
 def create_app():
     # Inisialisasi Flask
@@ -16,7 +33,8 @@ def create_app():
     CORS(app)  # Agar bisa diakses dari frontend berbeda (seperteyi localhost:5173)
 
     # Inisialisasi Groq client
-    client_rag = Groq(api_key="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")  # Ganti "key" dengan API key Anda
+    # client_rag = Groq(api_key="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")  # Ganti "key" dengan API key Anda
+    client_rag = Groq(api_key="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")  # API saffa
 
     # Model default GROQ
     GROQ_MODEL = "llama3-70b-8192"
@@ -37,11 +55,26 @@ def create_app():
         ws.append([prompt, response])
         wb.save(EXCEL_FILE)
 
+    @app.route("/chatbot/login", methods=["POST"])
+    def login_sociachat():
+        data = request.get_json(force=True)
+        username = data.get("username")
+        password = data.get("password")
+        cek = login(username, password)
+        return cek
+    
+    @app.route("/chatbot/data")
+    def get_data():
+        result = show_data()
+        return jsonify(result)
+
     @app.route("/chatbot/chat", methods=["POST"])
     def chatbot_chat():
         try:
             data = request.get_json(force=True)
             prompt = data.get("query")
+            user_id = data.get("user_id")
+            print(f"Prompt: {prompt}")
             
             if not prompt:
                 return jsonify({"error": "No query provided"}), 400
@@ -52,8 +85,9 @@ def create_app():
             
             # Ambil data relevan dari RAG
             tweets = rag(collection, optimal_prompt)
-            tweets_formatted = "\n".join(tweets) if tweets else "Tidak ada informasi yang relevan ditemukan."
-            
+            tweets_formatted = tweets if tweets else "Tidak ada informasi yang relevan ditemukan."
+            print(f"Tweets: {tweets_formatted}")
+
             # Buat prompt untuk LLM
             input_prompt = f"""INPUT Informasi yang tersedia: {tweets_formatted} Pertanyaan: {prompt} OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
             
@@ -69,11 +103,24 @@ def create_app():
                 if delta.content:
                     full_response += delta.content
             
+            print(f"Full Response: {full_response}")
             # Buat pertanyaan baru berdasarkan jawaban
             new_questions = buat_pertanyaan(optimal_prompt, full_response)
             
             # Simpan log ke Excel
             save_to_excel(prompt, full_response)
+            
+            new_data = {
+                "chat": prompt,
+                "response": full_response,
+                "user_id": user_id
+            }
+
+            # Insert data ke koleksi
+            insert_result = collections.insert_one(new_data)
+
+            # Tampilkan ID dari dokumen yang baru saja dimasukkan
+            print("Data berhasil dimasukkan dengan ID:", insert_result.inserted_id)
             
             return jsonify({"answer": full_response, "questions": new_questions})
         
@@ -81,6 +128,7 @@ def create_app():
             return jsonify({"error": str(e)}), 500
 
     return app
+
 
 # Jalankan Flask
 if __name__ == "__main__":

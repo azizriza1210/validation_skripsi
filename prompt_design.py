@@ -2,8 +2,8 @@ from groq import Groq
 import json
 import re
 
-client_ubah_prompt = Groq(api_key="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")  # Ganti "key" dengan API key Anda
-client_buat_pertanyaan = Groq(api_key="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")  # Ganti "key" dengan API key Anda
+client_ubah_prompt = Groq(api_key="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")  # API UPI
+client_buat_pertanyaan = Groq(api_key="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")  # API Aziz
 
 def ubah_prompt(pertanyaan): 
     prompt_1 = f"""Tugas kamu adalah untuk melakkukan transformasi pertanyaan menjadi sebuah bentuk prompt yang optimal. Dimana prompt tersebut memiliki instruksi, context, input data, dan output indicator.

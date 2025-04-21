@@ -85,8 +85,7 @@ def rag(collection, query_text):
     sorted_results = sorted(documents_scores, key=lambda x: x[1], reverse=False)
 
     tweets = ""
-
-    for i, (doc, score) in enumerate(sorted_results[:10     ], start=1):
-        tweets += f" \n- Informasi: {doc}"
+    for i, (doc, score) in enumerate(sorted_results[:10], start=1):
+        tweets += f"- Informasi {i}: {doc} | " 
 
     return tweets
