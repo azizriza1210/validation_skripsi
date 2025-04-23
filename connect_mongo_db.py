@@ -66,7 +66,7 @@ def login(username, password):
 
 
 # Tes fungsi show_data()
-tes = delete_data()
+tes = show_data()
 
 # Cetak tipe data hasil dan hasilnya dalam format JSON
 print(tes)  # Harusnya <class 'dict
