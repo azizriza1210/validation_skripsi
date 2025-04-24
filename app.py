@@ -3,7 +3,7 @@ from flask_cors import CORS
 from groq import Groq
 from save_chroma import save_to_chroma, rag
 from prompt_design import ubah_prompt, buat_pertanyaan
-from connect_mongo_db import show_data, login
+from connect_mongo_db import show_data, login, simpan_data_user
 from openpyxl import Workbook, load_workbook
 import os
 from pymongo.mongo_client import MongoClient
@@ -67,6 +67,12 @@ def create_app():
     def get_data():
         result = show_data()
         return jsonify(result)
+    
+    @app.route("/simpan-data", methods=["POST"])
+    def simpan_data():
+        data = request.get_json(force=True)
+        hasil = simpan_data_user(data)
+        return "hasil"
 
     @app.route("/chatbot/chat", methods=["POST"])
     def chatbot_chat():
@@ -106,9 +112,6 @@ def create_app():
             print(f"Full Response: {full_response}")
             # Buat pertanyaan baru berdasarkan jawaban
             new_questions = buat_pertanyaan(optimal_prompt, full_response)
-            
-            # Simpan log ke Excel
-            save_to_excel(prompt, full_response)
             
             new_data = {
                 "chat": prompt,

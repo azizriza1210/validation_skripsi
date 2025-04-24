@@ -65,6 +65,14 @@ def login(username, password):
         })
 
 
+def simpan_data_user(data_user):
+    data_user_collection = db['results_collection']
+
+    insert_result = data_user_collection.insert_one(data_user)
+
+    # Tampilkan ID dari dokumen yang baru saja dimasukkan
+    return print("Data berhasil dimasukkan dengan ID:", insert_result.inserted_id)
+
 # Tes fungsi show_data()
 tes = show_data()
 
