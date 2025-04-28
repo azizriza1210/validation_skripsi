@@ -56,6 +56,7 @@ def login(username, password,nama):
             "status": "success",
             "message": "Login berhasil",
             "user_id": str(ObjectId(user["_id"])),
+            "username": username,
             "nama" : str(nama) # Konversi ObjectId ke string
         })
     else:
