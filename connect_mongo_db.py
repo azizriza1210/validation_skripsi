@@ -46,7 +46,7 @@ def delete_data():
 
 from bson import ObjectId  # Digunakan untuk menangani ObjectId dari MongoDB
 
-def login(username, password):
+def login(username, password,nama):
     # Mencari dokumen dengan username dan password yang cocok
     user = accounts_collection.find_one({"username": username, "password": password})
     
@@ -55,7 +55,8 @@ def login(username, password):
         return json.dumps({
             "status": "success",
             "message": "Login berhasil",
-            "user_id": str(ObjectId(user["_id"]))  # Konversi ObjectId ke string
+            "user_id": str(ObjectId(user["_id"])),
+            "nama" : str(nama) # Konversi ObjectId ke string
         })
     else:
         # Mengembalikan status error jika username atau password salah

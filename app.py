@@ -60,7 +60,15 @@ def create_app():
         data = request.get_json(force=True)
         username = data.get("username")
         password = data.get("password")
-        cek = login(username, password)
+        if username == "user1":
+            nama = "Dr. Henike Primawanti, M.I.Pol."
+        elif username == "user2":  
+            nama = "Rino Adibowo, S.IP.,M.I.Po"
+        elif username == "user3":
+            nama = "Tatik Rohmawati, S.IP.,M.Si"
+        else:
+            nama = ""
+        cek = login(username, password, nama)
         return cek
     
     @app.route("/chatbot/data")

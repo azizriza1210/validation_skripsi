@@ -4,7 +4,8 @@ import os
 
 def save_to_chroma():
     # Tentukan direktori untuk penyimpanan data ChromaDB
-    persist_directory = r"D:\Kuliah\SKRIPSI\Validasi Skripsi\ChromaDB_Storage"
+    # persist_directory = r"D:\Kuliah\SKRIPSI\Validasi Skripsi\ChromaDB_Storage"
+    persist_directory = r"./ChromaDB_Storage"
 
     # Membuat klien Chroma dengan penyimpanan persisten
     client_chroma = chromadb.PersistentClient(path=persist_directory)
@@ -16,7 +17,7 @@ def save_to_chroma():
     except Exception as e:
         collection = client_chroma.get_collection(name=collection_name)
 
-    folder_path = r"D:\Kuliah\SKRIPSI\Validasi Skripsi"
+    folder_path = r"./"
 
     dataframes = []
 
