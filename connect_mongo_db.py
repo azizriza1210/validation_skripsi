@@ -75,8 +75,8 @@ def simpan_data_user(data_user):
     # Tampilkan ID dari dokumen yang baru saja dimasukkan
     return print("Data berhasil dimasukkan dengan ID:", insert_result.inserted_id)
 
-# Tes fungsi show_data()
-tes = show_data()
+# # Tes fungsi show_data()
+# tes = show_data()
 
-# Cetak tipe data hasil dan hasilnya dalam format JSON
-print(tes)  # Harusnya <class 'dict
+# # Cetak tipe data hasil dan hasilnya dalam format JSON
+# print(tes)  # Harusnya <class 'dict

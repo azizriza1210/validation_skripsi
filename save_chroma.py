@@ -37,6 +37,8 @@ def save_to_chroma():
     # Menggabungkan semua DataFrame menjadi satu
     combined_df = pd.concat(dataframes, ignore_index=True)
 
+    print(combined_df.duplicated().sum())
+
     # Menghapus duplikat
     combined_df.drop_duplicates(inplace=True)
 
