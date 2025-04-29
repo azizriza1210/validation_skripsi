@@ -4,10 +4,16 @@ from groq import Groq
 from save_chroma import save_to_chroma, rag
 from prompt_design import ubah_prompt, buat_pertanyaan
 from connect_mongo_db import show_data, login, simpan_data_user
+from chat_to_sheet import save_to_sheet
 from openpyxl import Workbook, load_workbook
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+
+username = None  
+user_id = None  
+collections_chatbot = None
+db = None 
 
 # Ini memastikan fungsi save_to_chroma() hanya dipanggil sekali
 collection = save_to_chroma()
@@ -57,6 +63,7 @@ def create_app():
 
     @app.route("/chatbot/login", methods=["POST"])
     def login_sociachat():
+        global username
         data = request.get_json(force=True)
         username = data.get("username")
         password = data.get("password")
@@ -73,8 +80,11 @@ def create_app():
     
     @app.route("/chatbot/data")
     def get_data():
+        global username, user_id, db, collections_chatbot
+        collections_chatbot = collections
         result = show_data()
-        return jsonify(result)
+        tes = save_to_sheet(db, username)
+        return "Selesai menyimpan data ke sheet"
     
     @app.route("/simpan-data", methods=["POST"])
     def simpan_data():
@@ -84,6 +94,7 @@ def create_app():
 
     @app.route("/chatbot/chat", methods=["POST"])
     def chatbot_chat():
+        global user_id
         try:
             data = request.get_json(force=True)
             prompt = data.get("query")
@@ -103,7 +114,7 @@ def create_app():
             print(f"Tweets: {tweets_formatted}")
 
             # Buat prompt untuk LLM
-            input_prompt = f"""INPUT Informasi yang tersedia: {tweets_formatted} Pertanyaan: {prompt} OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
+            input_prompt = f"""INPUT Informasi yang tersedia: "{tweets_formatted}" Pertanyaan: "{prompt}" OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
             
             # Stream response dan gabung jadi satu string
             full_response = ""
@@ -123,7 +134,7 @@ def create_app():
             
             new_data = {
                 "chat": prompt,
-                "response": full_response,
+                "response": str(full_response),
                 "user_id": user_id
             }
 
