@@ -1,9 +1,12 @@
 from groq import Groq  
 import json
 import re
+from google import genai
 
-client_ubah_prompt = Groq(api_key="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")  # API UPI
-client_buat_pertanyaan = Groq(api_key="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")  # API Aziz
+# client_ubah_prompt = Groq(api_key="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")  # API UPI
+# client_buat_pertanyaan = Groq(api_key="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")  # API Aziz
+client_ubah_prompt = genai.Client(api_key="AIzaSyC8P5GhFiDfcu-wlyOsFjij9baCvLy1Bxo") # saitamaseenei
+client_buat_pertanyaan = genai.Client(api_key="AIzaSyCacjouK67Zxxx9LjCoLmJls7p6OVm2V1s") # aziz.1012
 
 def ubah_prompt(pertanyaan): 
     prompt_1 = f"""Tugas kamu adalah untuk melakkukan transformasi pertanyaan menjadi sebuah bentuk prompt yang optimal. Dimana prompt tersebut memiliki instruksi, context, input data, dan output indicator.
@@ -32,17 +35,23 @@ def ubah_prompt(pertanyaan):
 
     full_prompt = prompt_1 + prompt_2
 
-    chat_completion = client_ubah_prompt.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": full_prompt,
-            }
-        ],
-        temperature=0,
-        model="meta-llama/llama-4-scout-17b-16e-instruct",
+    # chat_completion = client_ubah_prompt.chat.completions.create(
+    #     messages=[
+    #         {
+    #             "role": "user",
+    #             "content": full_prompt,
+    #         }
+    #     ],
+    #     temperature=0,
+    #     model="meta-llama/llama-4-scout-17b-16e-instruct",
+    # )
+    # text = str(chat_completion.choices[0].message.content)
+    response = client_ubah_prompt.models.generate_content(
+        model="gemini-2.0-flash-lite",
+        contents=full_prompt,
     )
-    text = str(chat_completion.choices[0].message.content)
+
+    text = str(response.text)
     # Menentukan posisi awal dan akhir blok JSON
     start = text.find('{')
     end = text.rfind('}') + 1
@@ -115,19 +124,25 @@ def buat_pertanyaan(pertanyaan, answer):
 
     full_prompt = prompt_1 + prompt_2
 
-    chat_completion = client_buat_pertanyaan.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": full_prompt,
-            }
-        ],
-        temperature=0,
-        model="meta-llama/llama-4-scout-17b-16e-instruct",
+    # chat_completion = client_buat_pertanyaan.chat.completions.create(
+    #     messages=[
+    #         {
+    #             "role": "user",
+    #             "content": full_prompt,
+    #         }
+    #     ],
+    #     temperature=0,
+    #     model="meta-llama/llama-4-scout-17b-16e-instruct",
+    # )
+
+    # # Ubah string ke list of dict
+    # text = str(chat_completion.choices[0].message.content)
+    response = client_buat_pertanyaan.models.generate_content(
+        model="gemini-2.0-flash-lite",
+        contents=full_prompt,
     )
 
-    # Ubah string ke list of dict
-    text = str(chat_completion.choices[0].message.content)
+    text = str(response.text)
     # Ambil array JSON dari string menggunakan regex
     match = re.search(r'\[\s*{.*?}\s*\]', text, re.DOTALL)
 

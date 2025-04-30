@@ -9,6 +9,7 @@ from openpyxl import Workbook, load_workbook
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from google import genai
 
 username = None  
 user_id = None  
@@ -40,7 +41,8 @@ def create_app():
 
     # Inisialisasi Groq client
     # client_rag = Groq(api_key="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")  # Ganti "key" dengan API key Anda
-    client_rag = Groq(api_key="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")  # API saffa
+    # client_rag = Groq(api_key="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")  # API saffa
+    client_rag = genai.Client(api_key="AIzaSyA_98Dpic9pdz172faDcYnSpFsMAgLgQww") # mohammadazizriza
 
     # Model default GROQ
     GROQ_MODEL = "llama3-70b-8192"
@@ -117,16 +119,23 @@ def create_app():
             input_prompt = f"""INPUT Informasi yang tersedia: "{tweets_formatted}" Pertanyaan: "{prompt}" OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
             
             # Stream response dan gabung jadi satu string
-            full_response = ""
-            for response in client_rag.chat.completions.create(
-                model=GROQ_MODEL,
-                messages=[{"role": "user", "content": input_prompt}],
-                temperature=0.1,
-                stream=True,
-            ):
-                delta = response.choices[0].delta
-                if delta.content:
-                    full_response += delta.content
+            # full_response = ""
+            # for response in client_rag.chat.completions.create(
+            #     model=GROQ_MODEL,
+            #     messages=[{"role": "user", "content": input_prompt}],
+            #     temperature=0.1,
+            #     stream=True,
+            # ):
+            #     delta = response.choices[0].delta
+            #     if delta.content:
+            #         full_response += delta.content
+            
+            response = client_rag.models.generate_content(
+                model="gemini-2.0-flash-lite",
+                contents=input_prompt,
+            )
+
+            full_response = str(response.text)
             
             print(f"Full Response: {full_response}")
             # Buat pertanyaan baru berdasarkan jawaban
