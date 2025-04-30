@@ -101,22 +101,22 @@ def create_app():
             data = request.get_json(force=True)
             prompt = data.get("query")
             user_id = data.get("user_id")
-            print(f"Prompt: {prompt}")
+            print(f"Prompt: {str(prompt)}")
             
             if not prompt:
                 return jsonify({"error": "No query provided"}), 400
             
             # Ubah prompt menggunakan Groq
-            optimal_prompt = ubah_prompt(prompt)
-            print(f"Optimal Prompt: {optimal_prompt}")
+            optimal_prompt = ubah_prompt(str(prompt))
+            # print(f"Optimal Prompt: {str(optimal_prompt)}")
             
             # Ambil data relevan dari RAG
-            tweets = rag(collection, optimal_prompt)
+            tweets = rag(collection, str(optimal_prompt))
             tweets_formatted = tweets if tweets else "Tidak ada informasi yang relevan ditemukan."
-            print(f"Tweets: {tweets_formatted}")
+            # print(f"Tweets: {tweets_formatted}")
 
             # Buat prompt untuk LLM
-            input_prompt = f"""INPUT Informasi yang tersedia: "{tweets_formatted}" Pertanyaan: "{prompt}" OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
+            input_prompt = f"""INPUT Informasi yang tersedia: '{str(tweets_formatted)}' Pertanyaan: '{str(prompt)}' OUTPUT Harus Gunakan Bahasa Indonesia. ANSWER:"""
             
             # Stream response dan gabung jadi satu string
             # full_response = ""
@@ -137,23 +137,21 @@ def create_app():
 
             full_response = str(response.text)
             
-            print(f"Full Response: {full_response}")
             # Buat pertanyaan baru berdasarkan jawaban
-            new_questions = buat_pertanyaan(optimal_prompt, full_response)
+            new_questions = buat_pertanyaan(prompt, full_response)
             
             new_data = {
                 "chat": prompt,
-                "response": str(full_response),
+                "response": full_response,
                 "user_id": user_id
             }
 
             # Insert data ke koleksi
             insert_result = collections.insert_one(new_data)
-
             # Tampilkan ID dari dokumen yang baru saja dimasukkan
             print("Data berhasil dimasukkan dengan ID:", insert_result.inserted_id)
             
-            return jsonify({"answer": full_response, "questions": new_questions})
+            return jsonify({"answer": full_response, "questions": list(new_questions)})
         
         except Exception as e:
             return jsonify({"error": str(e)}), 500

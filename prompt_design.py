@@ -103,24 +103,24 @@ def buat_pertanyaan(pertanyaan, answer):
 
     prompt_2 = """\n Format the outputs in JSON. Contoh:
     [
-        {{
+        {
             "pertanyaan": "Apa yang membuat Prabowo menjadi sorotan publik dalam pemilihan umum?",
             "prompt_pertanyaan": "Jelaskan apa yang menjadi faktor utama yang membuat Prabowo menjadi sorotan publik dalam pemilihan umum. Berikan analisis terperinci mengenai pembahasan tersebut.
             <br>Pertanyaan: Apa yang membuat Prabowo menjadi sorotan publik dalam pemilihan umum?<br>
             Berikan jawaban yang detail: "    
-        }},
-        {{
-            "pertanyaan": "Thank you!"
+        },
+        {
+            "pertanyaan": "Thank you!",
             "prompt_pertanyaan": "Thank you for helping"
-        }}
+        }
         ...
     ]
 
     SELALU TAMPILKAN INI PADA OUTPUT JSON YANG DIHASILKAN JIKA CONTOH 1
-    {{
-        "pertanyaan": "Thank you!"
+    {
+        "pertanyaan": "Thank you!",
         "prompt_pertanyaan": "Thank you for helping"
-    }}"""
+    }"""
 
     full_prompt = prompt_1 + prompt_2
 
@@ -137,18 +137,28 @@ def buat_pertanyaan(pertanyaan, answer):
 
     # # Ubah string ke list of dict
     # text = str(chat_completion.choices[0].message.content)
+    print(f"Ini pertanyaan '{pertanyaan}' dan jawaban '{answer}'")
     response = client_buat_pertanyaan.models.generate_content(
         model="gemini-2.0-flash-lite",
         contents=full_prompt,
     )
 
     text = str(response.text)
+    print(f"Text: {text}")
     # Ambil array JSON dari string menggunakan regex
     match = re.search(r'\[\s*{.*?}\s*\]', text, re.DOTALL)
 
+    # print(f"Match: {match}")
     if match:
         json_array_str = match.group(0)
-        data = json.loads(json_array_str)  # Ubah jadi list of dict
+        # Solusi 1: Escape karakter kontrol secara manual
+        # print(f"JSON Array String: {json_array_str}")
+        try:
+            data = json.loads(json_array_str, strict=False)  # Ubah jadi list of dict
+        except Exception as e:
+            print(f"Error parsing JSON: {e}")
+            return "Error parsing JSON."
+        # print(f"Data: {data}")
         return data  # Menampilkan seluruh array
     else:
         return "Array JSON tidak ditemukan."
